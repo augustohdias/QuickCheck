@@ -1,0 +1,8 @@
+[package]
+name = "new_rust_project"
+version = "0.1.0"
+authors = ["'Augusto' <'augustohdiasz@gmail.com'>"]
+
+[dependencies]
+rand = "0.5"
+rand_core = "0.2.1"
