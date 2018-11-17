@@ -1,5 +1,5 @@
 [package]
-name = "new_rust_project"
+name = "quick_check"
 version = "0.1.0"
 authors = ["'Augusto' <'augustohdiasz@gmail.com'>"]
 
