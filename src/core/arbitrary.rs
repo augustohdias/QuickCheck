@@ -74,7 +74,13 @@ impl Arbitrary for Box<str> {
 
 impl<T: Arbitrary + Clone> Arbitrary for Vec<T> {
   fn generate(sz: usize) -> Vec<T> {
-    vec![arbitrary::<T>(sz); sz]
+    let mut vector: Vec<T> = Vec::new();
+    
+    for _ in 0..sz {
+      vector.push(arbitrary::<T>(sz));
+    }
+    
+    vector
   }
 }
 
