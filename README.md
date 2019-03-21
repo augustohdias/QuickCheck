@@ -2,7 +2,7 @@
 Basic implementation of Quick Check for Rust.
 
 # Done
-* Test cases generator;
+* Test cases generation;
 * Test runner.
 
 # Missing
