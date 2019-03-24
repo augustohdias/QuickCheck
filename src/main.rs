@@ -29,12 +29,14 @@ fn sort_check<F>(f: &'static F) -> impl Fn(&Vec<i32>) -> bool where
 fn main () {
 	let tim_sort_prop = sort_check(&tim_sort);
 	let ao1_sort_prop = sort_check(&ao1_sort);
-	 
-	let test_params = core::TestParams{cases:100000, size: 5}; 
 	
+	let mut test = core::QuickCheck::new();
+	
+	test.set_config(100, 100);
+
 	println!("\n\n==== timsort test ====\n");
-	core::run_test::<Vec<i32>>(&tim_sort_prop, &test_params);
+	test.run::<Vec<i32>>(&tim_sort_prop);
 
 	println!("\n\n==== ao1sort test ====\n");
-	core::run_test::<Vec<i32>>(&ao1_sort_prop, &test_params);
+	test.run::<Vec<i32>>(&ao1_sort_prop);
 }

@@ -7,37 +7,42 @@ use self::arbitrary::arbitrary;
 use std::fmt;
 
 #[derive(Clone, Copy)]
-pub struct TestParams {
+struct TestConfig {
     pub cases: i32,
     pub size: i32
 }
 
-impl TestParams {
-    pub fn default_test() -> TestParams {
-        TestParams {
-            cases: 100, 
-            size: 10
-        }
-    }
-}
-
-impl fmt::Debug for TestParams {
+impl fmt::Debug for TestConfig {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "TestParams {{ cases: {}, size: {} }}", self.cases, self.size)
+        write!(f, "TestConfig {{ cases: {}, size: {} }}", self.cases, self.size)
     }
 }
 
-pub fn run_test<T>(property: &Fn(&T) -> bool, &params: &TestParams) where 
-    T: Sized + fmt::Debug + Arbitrary {
-    for _ in 0..params.cases {
-        let test_case = arbitrary::<T>(params.size as usize);
+pub struct QuickCheck {
+    config: TestConfig
+}
 
-        println!("Current test case: {:?}", test_case);
-
-        if !property(&test_case) {
-            println!("Failed for the following test case: {:?}", test_case);
-            return
-        }
+impl QuickCheck {
+    pub fn new() -> QuickCheck {
+        QuickCheck {config: TestConfig {cases: 0, size: 0}}
     }
-    println!("All {} tests passed!", params.cases)
+
+    pub fn set_config(&mut self, _cases: i32, _size: i32) {
+        self.config = TestConfig {cases: _cases, size: _size};
+    }
+    
+    pub fn run<T>(&self, property: &Fn(&T) -> bool) where 
+        T: Sized + fmt::Debug + Arbitrary {
+        for _ in 0..self.config.cases {
+            let test_case = arbitrary::<T>(self.config.size as usize);
+
+            println!("Current test case: {:?}", test_case);
+
+            if !property(&test_case) {
+                println!("Failed for the following test case: {:?}", test_case);
+                return
+            }
+        }
+        println!("All {} tests passed!", self.config.cases)
+    }
 }
