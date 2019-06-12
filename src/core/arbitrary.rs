@@ -3,6 +3,7 @@ extern crate rand;
 
 use std::iter;
 use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 use std::cmp::Ord;
 use self::rand::{Rng, thread_rng};
 use self::rand::distributions::Alphanumeric;
@@ -83,16 +84,15 @@ impl<T: Arbitrary + Clone> Arbitrary for Vec<T> {
   }
 }
 
-impl<K, V> Arbitrary for BTreeMap<K, V> 
-  where K: Arbitrary + Ord + Clone,
-        V: Arbitrary + Clone 
+impl<T> Arbitrary for BTreeSet<T> 
+  where T: Arbitrary + Ord + Clone 
 {
-  fn generate(sz: usize) -> BTreeMap<K, V> {
-    let mut map: BTreeMap<K, V> = BTreeMap::new();
+  fn generate(sz: usize) -> BTreeSet<T> {
+    let mut set: BTreeSet<T> = BTreeSet::new();
     for _ in 0..sz {
-      map.insert(arbitrary::<K>(), arbitrary_sized::<V>(sz));
+      set.insert(arbitrary::<T>());
     }
-    map
+    set
   }
 }
 

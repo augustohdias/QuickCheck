@@ -10,7 +10,8 @@ use std::fmt;
 #[derive(Clone, Copy)]
 struct TestConfig {
     pub cases: i32,
-    pub size: i32
+    pub size: i32,
+    pub debug: bool
 }
 
 impl fmt::Debug for TestConfig {
@@ -25,21 +26,47 @@ pub struct QuickCheck {
 
 impl QuickCheck {
     pub fn new() -> QuickCheck {
-        QuickCheck {config: TestConfig {cases: 0, size: 0}}
+        QuickCheck {config: TestConfig {cases: 0, size: 0, debug: false}}
     }
 
     pub fn set_config(&mut self, _cases: i32, _size: i32) {
-        self.config = TestConfig {cases: _cases, size: _size};
+        self.config = TestConfig {cases: _cases, size: _size, debug: false};
     }
-    
-    pub fn run<T>(&self, property: &Fn(&T) -> bool) where 
-        T: Sized + fmt::Debug + Arbitrary {
+
+    pub fn set_size(&mut self, _size: i32) {
+        self.config = TestConfig {
+            cases: self.config.cases,
+            size: _size,
+            debug: self.config.debug
+            };
+    }
+
+    pub fn set_cases(&mut self, _cases: i32) {
+        self.config = TestConfig {
+            cases: _cases,
+            size: self.config.size,
+            debug: self.config.debug
+            };
+    }
+
+    pub fn set_debug(&mut self, _debug: bool) {
+        self.config = TestConfig {
+            cases: self.config.cases,
+            size: self.config.size,
+            debug: _debug
+            };
+    }
+
+    pub fn run<T>(&self, property: &Fn(T) -> bool) where 
+        T: Sized + fmt::Debug + Arbitrary + Clone {
         for _ in 0..self.config.cases {
             let test_case = arbitrary_sized::<T>(self.config.size as usize);
+            
+            if self.config.debug {
+                println!("Current test case: {:?}", test_case);
+            }
 
-            println!("Current test case: {:?}", test_case);
-
-            if !property(&test_case) {
+            if !property(test_case.clone()) {
                 println!("Failed for the following test case: {:?}", test_case);
                 return
             }

@@ -1,54 +1,110 @@
+#![allow(dead_code)]
 mod core;
 
-fn sort_vec(v: &Vec<i32>) -> Vec<i32> {
-    let mut vector = v.clone();
-    vector.sort();
-    vector
-}
-
-fn vec_sort_property(test_case: &Vec<i32>) -> bool {
-    let sorted_vec = sort_vec(test_case);
-    for i in 1..sorted_vec.len() {
-        if sorted_vec.get(i-1) > sorted_vec.get(i) {
+fn vec_sort(test_case: Vec<i32>) -> bool {
+    let mut vec = test_case.clone();
+    vec.sort();
+    for i in 1..vec.len() {
+        if vec.get(i-1) > vec.get(i) {
             return false
         }
     }
     true
 }
 
-fn vec_insertion_size_property(test_case: &(Vec<i32>, i32)) -> bool {
-    let (immutable_vector, number) = test_case;
-    let mut vector = immutable_vector.clone();
+fn vec_size_increase(test_case: (Vec<i32>, i32)) -> bool {
+    let (mut vector, number) = test_case;
     let old_length = vector.len();
-    vector.push(*number);
-    if vector.len() != old_length + 1 {
-        return false
+    vector.push(number);
+    return vector.len() == old_length + 1
+}
+
+fn vec_contains(test_case: (Vec<i32>, i32)) -> bool {
+    let (mut vector, number) = test_case;
+    vector.push(number);
+    vector.contains(&number)
+}
+
+fn vec_push(test_case: (Vec<i32>, i32)) -> bool {
+    let (mut vector, number) = test_case;
+    vector.push(number);
+    match vector.last() {
+        Some(n) => {
+            if *n != number {
+                return false
+            }
+            true
+        }
+        None => { 
+            return false
+        }
     }
-    true
 }
 
-fn vec_insertion_property(test_case: &(Vec<i32>, i32)) -> bool {
-    let (immutable_vector, number) = test_case;
-    let mut vector = immutable_vector.clone();
-    vector.push(*number);
-    vector.contains(number)
-}
-
-fn vec_removal_size_property(test_case: &Vec<i32>) -> bool {
+fn vec_size_decrease(test_case: Vec<i32>) -> bool {
     let mut vector = test_case.clone();
     let old_length = vector.len();
     vector.pop();
-    if vector.len() != old_length - 1 {
+    return vector.len() == (old_length - 1)
+}
+
+fn vec_remove(test_case: (Vec<i32>, i32)) -> bool {
+    let (mut vector, seed) = test_case;
+    let index = seed as usize % (vector.len() - 1);
+
+    let (ok, element) = match vector.get(index + 1) {
+        Some(element) => (true, *element),
+        None => (false, 0)
+    };
+
+    if !ok {
         return false
     }
-    true
+    
+    vector.remove(index);
+    return vector[index] == element
+}
+
+fn vec_multi_element_reverse(test_case: Vec<i32>) -> bool {
+    let mut vector = test_case.clone();
+    vector.reverse();
+    vector.reverse();
+    return vector == test_case
+}
+
+fn vec_single_element_reverse(test_case: Vec<i32>) -> bool {
+    let mut vector = test_case.clone();
+    vector.reverse();
+    return vector == test_case
 }
 
 fn main () {
     let mut test = core::QuickCheck::new();
-    test.set_config(10, 100);
-    test.run::<Vec<i32>>(&vec_sort_property);
-    test.run::<(Vec<i32>, i32)>(&vec_insertion_property);
-    test.run::<(Vec<i32>, i32)>(&vec_insertion_size_property);
-    test.run::<Vec<i32>>(&vec_removal_size_property);
+    test.set_config(100, 10);
+
+    println!("Sorting test:");
+    test.run::<Vec<i32>>(&vec_sort);
+    
+    println!("Size increase test:");
+    test.run::<(Vec<i32>, i32)>(&vec_size_increase);
+    
+    println!("Content test:");
+    test.run::<(Vec<i32>, i32)>(&vec_contains);
+    
+    println!("Remove test:");
+    test.run::<(Vec<i32>, i32)>(&vec_remove);
+
+    println!("Size decrease test:");
+    test.run::<Vec<i32>>(&vec_size_decrease);
+
+    println!("Reverse tests:");
+    println!("* Multiple elements:");
+    test.run::<Vec<i32>>(&vec_multi_element_reverse);
+
+    println!("* One element:");
+    test.set_size(1);
+    test.run::<Vec<i32>>(&vec_single_element_reverse);
+
+
+    
 }
