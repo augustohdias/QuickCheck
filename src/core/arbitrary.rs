@@ -2,6 +2,8 @@
 extern crate rand;
 
 use std::iter;
+use std::collections::BTreeMap;
+use std::cmp::Ord;
 use self::rand::{Rng, thread_rng};
 use self::rand::distributions::Alphanumeric;
 
@@ -9,8 +11,12 @@ pub trait Arbitrary {
 	fn generate(sz: usize) -> Self;
 }
 
-pub fn arbitrary<T: Arbitrary>(sz: usize) -> T {
+pub fn arbitrary_sized<T: Arbitrary>(sz: usize) -> T {
   Arbitrary::generate(sz)
+}
+
+pub fn arbitrary<T: Arbitrary>() -> T {
+  Arbitrary::generate(1)
 }
 
 macro_rules! arb_single_arg ( ($T:ty) => (
@@ -25,7 +31,7 @@ macro_rules! arb_single_arg ( ($T:ty) => (
 macro_rules! arb_multi_arg ( ($($T:ident),+ ) => (
         impl<$($T: Arbitrary),+> Arbitrary for ($($T),+) {
             fn generate(sz: usize) -> ($($T),+) {
-                ($(arbitrary::<$T>(sz)),+)
+                ($(arbitrary_sized::<$T>(sz)),+)
             }
         }
     )
@@ -44,11 +50,6 @@ arb_multi_arg!(A, B);
 arb_multi_arg!(A, B, C);
 arb_multi_arg!(A, B, C, D);
 arb_multi_arg!(A, B, C, D, E);
-arb_multi_arg!(A, B, C, D, E, F);
-arb_multi_arg!(A, B, C, D, E, F, G);
-arb_multi_arg!(A, B, C, D, E, F, G, H);
-arb_multi_arg!(A, B, C, D, E, F, G, H, I);
-arb_multi_arg!(A, B, C, D, E, F, G, H, I, J);
 
 impl Arbitrary for char {
   fn generate(_: usize) -> char {
@@ -68,24 +69,35 @@ impl Arbitrary for String {
 
 impl Arbitrary for Box<str> {
   fn generate(sz: usize) -> Box<str> {
-    arbitrary::<String>(sz).into_boxed_str()
+    arbitrary_sized::<String>(sz).into_boxed_str()
   }
 }
 
 impl<T: Arbitrary + Clone> Arbitrary for Vec<T> {
   fn generate(sz: usize) -> Vec<T> {
     let mut vector: Vec<T> = Vec::new();
-    
     for _ in 0..sz {
-      vector.push(arbitrary::<T>(sz));
+      vector.push(arbitrary_sized::<T>(sz));
     }
-    
     vector
+  }
+}
+
+impl<K, V> Arbitrary for BTreeMap<K, V> 
+  where K: Arbitrary + Ord + Clone,
+        V: Arbitrary + Clone 
+{
+  fn generate(sz: usize) -> BTreeMap<K, V> {
+    let mut map: BTreeMap<K, V> = BTreeMap::new();
+    for _ in 0..sz {
+      map.insert(arbitrary::<K>(), arbitrary_sized::<V>(sz));
+    }
+    map
   }
 }
 
 impl<T: Arbitrary + Clone> Arbitrary for Box<[T]> {
   fn generate(sz: usize) -> Box<[T]> {
-    arbitrary::<Vec<T>>(sz).into_boxed_slice()
+    arbitrary_sized::<Vec<T>>(sz).into_boxed_slice()
   }
 }

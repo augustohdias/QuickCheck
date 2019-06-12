@@ -1,8 +1,9 @@
-#![allow(dead_code)]
+#![allow(dead_code, unused_imports)]
 pub mod arbitrary;
 
 use self::arbitrary::Arbitrary;
 use self::arbitrary::arbitrary;
+use self::arbitrary::arbitrary_sized;
 
 use std::fmt;
 
@@ -34,7 +35,7 @@ impl QuickCheck {
     pub fn run<T>(&self, property: &Fn(&T) -> bool) where 
         T: Sized + fmt::Debug + Arbitrary {
         for _ in 0..self.config.cases {
-            let test_case = arbitrary::<T>(self.config.size as usize);
+            let test_case = arbitrary_sized::<T>(self.config.size as usize);
 
             println!("Current test case: {:?}", test_case);
 
