@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/augustohdias/QuickCheck.svg?branch=master)](https://travis-ci.com/augustohdias/QuickCheck)
+
 # QuickCheck
 Basic implementation of Quick Check for Rust.
 
